@@ -1,22 +1,42 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
-import jsPDF from 'jspdf';
+
+interface SDORFormData {
+  afpNumber: string;
+  ssn: string;
+  crpContractor: string;
+  crpRepresentativeName: string;
+  dvrCounselor: string;
+  totalCost: string;
+  serviceCategory: string[];
+  serviceStartDate: string;
+  serviceEndDate: string;
+  clientName: string;
+  clientDOB: string;
+  clientAddress: string;
+  clientPhone: string;
+  clientEmail: string;
+  employmentOutcome: string;
+  employmentStatus: string;
+  wageAtPlacement: string;
+  hoursPerWeek: string;
+  jobTitle: string;
+  employerName: string;
+  employerAddress: string;
+  employerPhone: string;
+  notes: string;
+}
 
 export default function SDORForm() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SDORFormData>({
     afpNumber: '',
     ssn: '',
     crpContractor: '',
     crpRepresentativeName: '',
     dvrCounselor: '',
     totalCost: '$0.00',
-    serviceCategory: [] as string[],
+    serviceCategory: [],
     serviceStartDate: '',
     serviceEndDate: '',
     clientName: '',
@@ -65,133 +85,20 @@ export default function SDORForm() {
     }));
   };
 
-  const generatePDF = () => {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    let yPosition = 20;
-
-    // Title
-    doc.setFontSize(16);
-    doc.text('SDOR Addendum Form for Cascadia Deaf Nation', pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 10;
-
-    doc.setFontSize(10);
-    doc.text('Washington State Division of Vocational Rehabilitation', pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 5;
-    doc.text('DSHS 11-030 (REV. 07/2025)', pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 15;
-
-    // Helper function to add form fields
-    const addField = (label: string, value: string) => {
-      if (yPosition > pageHeight - 20) {
-        doc.addPage();
-        yPosition = 20;
-      }
-      doc.setFontSize(10);
-      doc.text(`${label}:`, 20, yPosition);
-      doc.setFont(undefined, 'normal');
-      doc.text(value || '___________________', 100, yPosition);
-      yPosition += 8;
-    };
-
-    // Basic Information
-    doc.setFont(undefined, 'bold');
-    doc.text('BASIC INFORMATION', 20, yPosition);
-    yPosition += 8;
-    doc.setFont(undefined, 'normal');
-
-    addField('AFP Number', formData.afpNumber);
-    addField('SSN (Last 4 Digits)', formData.ssn);
-    addField('CRP Contractor', formData.crpContractor);
-    addField('CRP Representative Name', formData.crpRepresentativeName);
-    addField('DVR Counselor', formData.dvrCounselor);
-    addField('Total Cost', formData.totalCost);
-
-    // Service Category
-    yPosition += 5;
-    doc.setFont(undefined, 'bold');
-    doc.text('CRP SERVICE CATEGORY', 20, yPosition);
-    yPosition += 8;
-    doc.setFont(undefined, 'normal');
-
-    if (formData.serviceCategory.length > 0) {
-      doc.text('Selected Services:', 20, yPosition);
-      yPosition += 6;
-      formData.serviceCategory.forEach(service => {
-        if (yPosition > pageHeight - 20) {
-          doc.addPage();
-          yPosition = 20;
-        }
-        doc.text(`• ${service}`, 25, yPosition);
-        yPosition += 6;
-      });
-    } else {
-      doc.text('No services selected', 20, yPosition);
-      yPosition += 8;
-    }
-
-    // Timelines
-    yPosition += 5;
-    doc.setFont(undefined, 'bold');
-    doc.text('TIMELINES', 20, yPosition);
-    yPosition += 8;
-    doc.setFont(undefined, 'normal');
-
-    addField('Service Start Date', formData.serviceStartDate);
-    addField('Service End Date', formData.serviceEndDate);
-
-    // Client Information
-    yPosition += 5;
-    doc.setFont(undefined, 'bold');
-    doc.text('CLIENT INFORMATION', 20, yPosition);
-    yPosition += 8;
-    doc.setFont(undefined, 'normal');
-
-    addField('Client Name', formData.clientName);
-    addField('Date of Birth', formData.clientDOB);
-    addField('Address', formData.clientAddress);
-    addField('Phone', formData.clientPhone);
-    addField('Email', formData.clientEmail);
-
-    // Employment Outcome
-    yPosition += 5;
-    doc.setFont(undefined, 'bold');
-    doc.text('EMPLOYMENT OUTCOME', 20, yPosition);
-    yPosition += 8;
-    doc.setFont(undefined, 'normal');
-
-    addField('Employment Outcome', formData.employmentOutcome);
-    addField('Employment Status', formData.employmentStatus);
-    addField('Wage at Placement', formData.wageAtPlacement);
-    addField('Hours Per Week', formData.hoursPerWeek);
-    addField('Job Title', formData.jobTitle);
-
-    // Employer Information
-    yPosition += 5;
-    doc.setFont(undefined, 'bold');
-    doc.text('EMPLOYER INFORMATION', 20, yPosition);
-    yPosition += 8;
-    doc.setFont(undefined, 'normal');
-
-    addField('Employer Name', formData.employerName);
-    addField('Employer Address', formData.employerAddress);
-    addField('Employer Phone', formData.employerPhone);
-
-    // Notes
-    if (formData.notes) {
-      yPosition += 5;
-      doc.setFont(undefined, 'bold');
-      doc.text('NOTES', 20, yPosition);
-      yPosition += 8;
-      doc.setFont(undefined, 'normal');
-      const notesLines = doc.splitTextToSize(formData.notes, 170);
-      doc.text(notesLines, 20, yPosition);
-    }
-
-    // Save the PDF
-    doc.save('SDOR_Form_Cascadia_Deaf_Nation.pdf');
+  const handlePrint = () => {
+    window.print();
   };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Form data:', formData);
+    alert('Form submitted successfully!');
+  };
+
+  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+  const buttonClass = "px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const outlineButtonClass = "px-6 py-3 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500";
 
   return (
     <div className="w-full max-w-4xl mx-auto p-6">
@@ -202,75 +109,87 @@ export default function SDORForm() {
           <p className="text-center text-gray-500 text-sm">DSHS 11-030 (REV. 07/2025)</p>
         </div>
 
-        <form className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Information Section */}
           <div>
             <h2 className="text-xl font-bold mb-4 pb-2 border-b">Basic Information</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="afpNumber">AFP Number *</Label>
-                <Input
+                <label htmlFor="afpNumber" className={labelClass}>AFP Number *</label>
+                <input
                   id="afpNumber"
                   name="afpNumber"
+                  type="text"
                   value={formData.afpNumber}
                   onChange={handleInputChange}
                   placeholder="Enter AFP Number"
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="ssn">SSN (Last 4 Digits) *</Label>
-                <Input
+                <label htmlFor="ssn" className={labelClass}>SSN (Last 4 Digits) *</label>
+                <input
                   id="ssn"
                   name="ssn"
+                  type="text"
                   value={formData.ssn}
                   onChange={handleInputChange}
                   placeholder="XXXX"
                   maxLength={4}
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="crpContractor">CRP Contractor *</Label>
-                <Input
+                <label htmlFor="crpContractor" className={labelClass}>CRP Contractor *</label>
+                <input
                   id="crpContractor"
                   name="crpContractor"
+                  type="text"
                   value={formData.crpContractor}
                   onChange={handleInputChange}
                   placeholder="Enter CRP Contractor"
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="crpRepresentativeName">CRP Representative Name *</Label>
-                <Input
+                <label htmlFor="crpRepresentativeName" className={labelClass}>CRP Representative Name *</label>
+                <input
                   id="crpRepresentativeName"
                   name="crpRepresentativeName"
+                  type="text"
                   value={formData.crpRepresentativeName}
                   onChange={handleInputChange}
                   placeholder="Enter Name"
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="dvrCounselor">DVR Counselor *</Label>
-                <Input
+                <label htmlFor="dvrCounselor" className={labelClass}>DVR Counselor *</label>
+                <input
                   id="dvrCounselor"
                   name="dvrCounselor"
+                  type="text"
                   value={formData.dvrCounselor}
                   onChange={handleInputChange}
                   placeholder="Enter DVR Counselor"
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="totalCost">Total Cost *</Label>
-                <Input
+                <label htmlFor="totalCost" className={labelClass}>Total Cost *</label>
+                <input
                   id="totalCost"
                   name="totalCost"
+                  type="text"
                   value={formData.totalCost}
                   onChange={handleInputChange}
                   placeholder="$0.00"
+                  className={inputClass}
                   required
                 />
               </div>
@@ -283,12 +202,16 @@ export default function SDORForm() {
             <div className="grid grid-cols-2 gap-4">
               {serviceCategories.map(category => (
                 <div key={category} className="flex items-center space-x-2">
-                  <Checkbox
+                  <input
                     id={category}
-                    checked={formData.serviceCategory.includes(category)}
-                    onCheckedChange={() => handleCheckboxChange(category)}
+                    type="checkbox"
+                    name="serviceCategory"
+                    value={category}
+                    checked={formData.serviceCategory.includes(category))}
+                    onChange={() => handleCheckboxChange(category))}
+                    className="w-4 h-4"
                   />
-                  <Label htmlFor={category} className="font-normal cursor-pointer">{category}</Label>
+                  <label htmlFor={category} className="text-sm cursor-pointer">{category}</label>
                 </div>
               ))}
             </div>
@@ -299,24 +222,26 @@ export default function SDORForm() {
             <h2 className="text-xl font-bold mb-4 pb-2 border-b">Timelines *</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="serviceStartDate">Service Start Date *</Label>
-                <Input
+                <label htmlFor="serviceStartDate" className={labelClass}>Service Start Date *</label>
+                <input
                   id="serviceStartDate"
                   name="serviceStartDate"
                   type="date"
                   value={formData.serviceStartDate}
                   onChange={handleInputChange}
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="serviceEndDate">Service End Date *</Label>
-                <Input
+                <label htmlFor="serviceEndDate" className={labelClass}>Service End Date *</label>
+                <input
                   id="serviceEndDate"
                   name="serviceEndDate"
                   type="date"
                   value={formData.serviceEndDate}
                   onChange={handleInputChange}
+                  className={inputClass}
                   required
                 />
               </div>
@@ -328,58 +253,66 @@ export default function SDORForm() {
             <h2 className="text-xl font-bold mb-4 pb-2 border-b">Client Information</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="clientName">Client Name *</Label>
-                <Input
+                <label htmlFor="clientName" className={labelClass}>Client Name *</label>
+                <input
                   id="clientName"
                   name="clientName"
+                  type="text"
                   value={formData.clientName}
                   onChange={handleInputChange}
                   placeholder="Enter Client Name"
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="clientDOB">Date of Birth *</Label>
-                <Input
+                <label htmlFor="clientDOB" className={labelClass}>Date of Birth *</label>
+                <input
                   id="clientDOB"
                   name="clientDOB"
                   type="date"
                   value={formData.clientDOB}
                   onChange={handleInputChange}
+                  className={inputClass}
                   required
                 />
               </div>
               <div className="col-span-2">
-                <Label htmlFor="clientAddress">Address *</Label>
-                <Input
+                <label htmlFor="clientAddress" className={labelClass}>Address *</label>
+                <input
                   id="clientAddress"
                   name="clientAddress"
+                  type="text"
                   value={formData.clientAddress}
                   onChange={handleInputChange}
                   placeholder="Enter Address"
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="clientPhone">Phone *</Label>
-                <Input
+                <label htmlFor="clientPhone" className={labelClass}>Phone *</label>
+                <input
                   id="clientPhone"
                   name="clientPhone"
+                  type="text"
                   value={formData.clientPhone}
                   onChange={handleInputChange}
                   placeholder="Enter Phone"
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="clientEmail">Email *</Label>
-                <Input
+                <label htmlFor="clientEmail" className={labelClass}>Email *</label>
+                <input
                   id="clientEmail"
                   name="clientEmail"
                   type="email"
                   value={formData.clientEmail}
                   onChange={handleInputChange}
                   placeholder="Enter Email"
+                  className={inputClass}
                   required
                 />
               </div>
@@ -391,58 +324,67 @@ export default function SDORForm() {
             <h2 className="text-xl font-bold mb-4 pb-2 border-b">Employment Outcome</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="employmentOutcome">Employment Outcome *</Label>
-                <Input
+                <label htmlFor="employmentOutcome" className={labelClass}>Employment Outcome *</label>
+                <input
                   id="employmentOutcome"
                   name="employmentOutcome"
+                  type="text"
                   value={formData.employmentOutcome}
                   onChange={handleInputChange}
                   placeholder="Enter Employment Outcome"
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="employmentStatus">Employment Status *</Label>
-                <Input
+                <label htmlFor="employmentStatus" className={labelClass}>Employment Status *</label>
+                <input
                   id="employmentStatus"
                   name="employmentStatus"
+                  type="text"
                   value={formData.employmentStatus}
                   onChange={handleInputChange}
                   placeholder="Enter Employment Status"
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="wageAtPlacement">Wage at Placement *</Label>
-                <Input
+                <label htmlFor="wageAtPlacement" className={labelClass}>Wage at Placement *</label>
+                <input
                   id="wageAtPlacement"
                   name="wageAtPlacement"
+                  type="text"
                   value={formData.wageAtPlacement}
                   onChange={handleInputChange}
                   placeholder="Enter Wage"
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="hoursPerWeek">Hours Per Week *</Label>
-                <Input
+                <label htmlFor="hoursPerWeek" className={labelClass}>Hours Per Week *</label>
+                <input
                   id="hoursPerWeek"
                   name="hoursPerWeek"
                   type="number"
                   value={formData.hoursPerWeek}
                   onChange={handleInputChange}
                   placeholder="Enter Hours"
+                  className={inputClass}
                   required
                 />
               </div>
               <div className="col-span-2">
-                <Label htmlFor="jobTitle">Job Title *</Label>
-                <Input
+                <label htmlFor="jobTitle" className={labelClass}>Job Title *</label>
+                <input
                   id="jobTitle"
                   name="jobTitle"
+                  type="text"
                   value={formData.jobTitle}
                   onChange={handleInputChange}
                   placeholder="Enter Job Title"
+                  className={inputClass}
                   required
                 />
               </div>
@@ -454,35 +396,41 @@ export default function SDORForm() {
             <h2 className="text-xl font-bold mb-4 pb-2 border-b">Employer Information</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                <Label htmlFor="employerName">Employer Name *</Label>
-                <Input
+                <label htmlFor="employerName" className={labelClass}>Employer Name *</label>
+                <input
                   id="employerName"
                   name="employerName"
+                  type="text"
                   value={formData.employerName}
                   onChange={handleInputChange}
                   placeholder="Enter Employer Name"
+                  className={inputClass}
                   required
                 />
               </div>
               <div className="col-span-2">
-                <Label htmlFor="employerAddress">Employer Address *</Label>
-                <Input
+                <label htmlFor="employerAddress" className={labelClass}>Employer Address *</label>
+                <input
                   id="employerAddress"
                   name="employerAddress"
+                  type="text"
                   value={formData.employerAddress}
                   onChange={handleInputChange}
                   placeholder="Enter Employer Address"
+                  className={inputClass}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="employerPhone">Employer Phone *</Label>
-                <Input
+                <label htmlFor="employerPhone" className={labelClass}>Employer Phone *</label>
+                <input
                   id="employerPhone"
                   name="employerPhone"
+                  type="text"
                   value={formData.employerPhone}
                   onChange={handleInputChange}
                   placeholder="Enter Employer Phone"
+                  className={inputClass}
                   required
                 />
               </div>
@@ -492,29 +440,29 @@ export default function SDORForm() {
           {/* Notes Section */}
           <div>
             <h2 className="text-xl font-bold mb-4 pb-2 border-b">Additional Notes</h2>
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
+            <label htmlFor="notes" className={labelClass}>Notes</label>
+            <textarea
               id="notes"
               name="notes"
               value={formData.notes}
               onChange={handleInputChange}
               placeholder="Enter any additional notes"
               rows={4}
+              className={inputClass}
             />
           </div>
 
-          {/* Submit Button */}
+          {/* Buttons */}
           <div className="flex gap-4 justify-center pt-6">
-            <Button
+            <button
               type="button"
-              onClick={generatePDF}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2"
+              onClick={handlePrint}
+              className={buttonClass}
             >
               Download as PDF
-            </Button>
-            <Button
+            </button>
+            <button
               type="reset"
-              variant="outline"
               onClick={() => {
                 setFormData({
                   afpNumber: '',
@@ -542,12 +490,13 @@ export default function SDORForm() {
                   notes: '',
                 });
               }}
+              className={outlineButtonClass}
             >
               Clear Form
-            </Button>
+            </button>
           </div>
         </form>
       </div>
     </div>
-  );
+  (};
 }
